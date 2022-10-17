@@ -1,10 +1,6 @@
-package pl.edu.uwm.encoder;
+package pl.edu.uwm.JPEG;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 import static pl.edu.uwm.Constants.*;
 

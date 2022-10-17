@@ -1,4 +1,4 @@
-package pl.edu.uwm.encoder;
+package pl.edu.uwm.JPEG;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

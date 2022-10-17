@@ -1,4 +1,4 @@
-package pl.edu.uwm.encoder;
+package pl.edu.uwm.JPEG;
 
 import static java.lang.Math.*;
 import static java.lang.Math.sqrt;
@@ -8,9 +8,15 @@ public class DCT {
     private static final int BLOCK_SIZE = 8;
     double[][] result;
     double[][] channelArray;
+    int[][] quantizationTable;
 
-    public DCT(double[][] channelArray) {
-        this.channelArray = channelArray;
+    public DCT(double[][] channelArray, int[][] quantizationTable) {
+        this.quantizationTable = quantizationTable;
+        this.channelArray = new double[channelArray.length][channelArray[0].length];
+
+        for (int y = 0; y < channelArray.length; y++)
+            for (int x = 0; x < channelArray[0].length; x++)
+                this.channelArray[y][x] = channelArray[y][x] - 128;
         dct();
     }
 
@@ -32,10 +38,10 @@ public class DCT {
     }
 
     private void calculateDCT(int yBlock, int xBlock, int yPoint, int xPoint) {
-        double Cy = yPoint == 0 ? 1.0 / sqrt(2) : 1;
-        double Cx = xPoint == 0 ? 1.0 / sqrt(2) : 1;
+        double Cy = yPoint == 0 ? (1.0 / sqrt(2)) : 1;
+        double Cx = xPoint == 0 ? (1.0 / sqrt(2)) : 1;
         double blockSum = sumBlockDCT(yBlock, xBlock, yPoint, xPoint);
-        result[yPoint][xPoint] = (1 / sqrt(2.0 * BLOCK_SIZE)) * Cy * Cx * blockSum;
+        result[yPoint][xPoint] = Math.round((1 / sqrt(2.0 * BLOCK_SIZE)) * Cy * Cx * blockSum);// / quantizationTable[yPoint - yBlock][xPoint - xBlock]);
     }
 
     private double sumBlockDCT(int yBlock, int xBlock, int yPoint, int xPoint) {

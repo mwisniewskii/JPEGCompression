@@ -1,4 +1,4 @@
-package pl.edu.uwm.encoder;
+package pl.edu.uwm.JPEG;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -9,11 +9,12 @@ import java.io.IOException;
 import static pl.edu.uwm.Constants.*;
 import static pl.edu.uwm.Constants.V;
 
-public class Encoder {
+public class JPEG {
     private Color[][] sourceImage;
     private double[][][] yuvArray;
     private Subsampling.Type subsamplingType;
-    double[][] layerY, layerU, layerV;
+    private double[][] layerY, layerU, layerV;
+    private int quality;
 
     public void readImage(String filePath) throws Exception {
         ImageReader imageReader = new ImageReader(filePath);
@@ -30,6 +31,10 @@ public class Encoder {
         this.subsamplingType = subsamplingType;
     }
 
+    public void setQuality(int quality) {
+        this.quality = quality;
+    }
+
     public void subsampling() {
         Subsampling subsampling = new Subsampling(yuvArray, subsamplingType);
         layerY = subsampling.getLayerY();
@@ -38,17 +43,22 @@ public class Encoder {
     }
 
     public void dct() throws Exception {
-        layerY = new DCT(layerY).getResult();
-        layerU = new DCT(layerU).getResult();
-        layerV = new DCT(layerV).getResult();
+        QuantizationTable quantizationLum = new QuantizationTable(quantizationMatrixLuminance, quality);
+        QuantizationTable quantizationChrom = new QuantizationTable(quantizationMatrixChrominance, quality);
+
+        layerY = new DCT(layerY, quantizationLum.getResult()).getResult();
+        layerU = new DCT(layerU, quantizationChrom.getResult()).getResult();
+        layerV = new DCT(layerV, quantizationChrom.getResult()).getResult();
 
         writeImage("dctY", layerY);
         writeImage("dctU", layerU);
         writeImage("dctV", layerV);
 
-
     }
 
+    public void encode() throws Exception {
+
+    }
 
     private void writeChannelsImages(String filePath) throws IOException {
         int height = yuvArray.length;
@@ -88,8 +98,7 @@ public class Encoder {
     private void writeImage(String filePath, double[][] array) throws Exception {
         int height = array.length;
         int width = array[0].length;
-        System.out.println("SAVING IMAGE " + height + " x " + width);
-        BufferedImage im = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage im = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -100,7 +109,7 @@ public class Encoder {
                 im.setRGB(x, y, (r << 16) | (g << 8) | b);
             }
         }
-        ImageIO.write(im, "BMP", new File(filePath + ".bmp"));
+        ImageIO.write(im, "png", new File(filePath + ".png"));
 
     }
 
